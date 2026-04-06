@@ -78,8 +78,10 @@ class DNUpdater {
           || ProcessInfo().isOperatingSystemAtLeast(
             OperatingSystemVersion(majorVersion: 17, minorVersion: 0, patchVersion: 0))
 
-        saveSite(jsonString: newSiteJson, manager: site.manager, saveToManager: shouldSaveToManager)
-        { error in
+        saveSite(
+          jsonString: newSiteJson, manager: site.manager, existingSite: site,
+          saveToManager: shouldSaveToManager
+        ) { error in
           if error != nil {
             self.log.error(
               "failed to save update: \(error!.localizedDescription, privacy: .public)")

@@ -122,7 +122,7 @@ class DNSiteUpdater(
         }
 
         if (newSiteJson != null) {
-            saveSite(context, newSiteJson)
+            saveSite(context, newSiteJson, existingSite = site)
             Log.d(TAG, "Updated site ${site.id}: ${site.name}")
             return Result.CONFIG_UPDATED
         }
