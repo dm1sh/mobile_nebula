@@ -53,6 +53,7 @@ class UnsafeRouteScreenState extends State<UnsafeRouteScreen> {
 
   @override
   void dispose() {
+    routeFocus.dispose();
     for (final c in _gatewayControllers) {
       c.dispose();
     }
@@ -153,7 +154,6 @@ class UnsafeRouteScreenState extends State<UnsafeRouteScreen> {
                     if (!valid) return 'Invalid IP';
                     return null;
                   },
-                  onChanged: (_) => setState(() => changed = true),
                 ),
               ),
               if (canRemove)
@@ -188,7 +188,6 @@ class UnsafeRouteScreenState extends State<UnsafeRouteScreen> {
                     if (n == null || n < 1) return '≥1';
                     return null;
                   },
-                  onChanged: (_) => setState(() => changed = true),
                 ),
               ),
             ],
