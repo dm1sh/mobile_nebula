@@ -51,28 +51,4 @@ jobs:
           flutter test
 
       - name: Build Android debug
-        run: flutter build appbundle --debug
-
-      - name: Setup bundletool for APK generation
-        if: github.ref == 'refs/heads/main' || contains(github.event.pull_request.labels.*.name, 'release-check')
-        run: |
-          curl -Lo bundletool.jar https://github.com/google/bundletool/releases/download/1.18.1/bundletool-all-1.18.1.jar
-
-      - name: Generate debug apk
-        if: github.ref == 'refs/heads/main' || contains(github.event.pull_request.labels.*.name, 'release-check')
-        env:
-          TOKEN: ${{ secrets.MACHINE_USER_PAT }}
-        run: |
-          java -jar bundletool.jar build-apks \
-            --bundle=build/app/outputs/bundle/debug/app-debug.aab \
-            --output=build/app/outputs/apk/debug/app-debug.apks \
-            --mode=universal
-          unzip -p build/app/outputs/apk/debug/app-debug.apks universal.apk > build/app/outputs/apk/debug/app-debug.apk
-
-      - name: Collect debug apk
-        if: github.ref == 'refs/heads/main' || contains(github.event.pull_request.labels.*.name, 'release-check')
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #6.0.0
-        with:
-          name: MobileNebulaDebug.apk
-          path: build/app/outputs/apk/debug/app-debug.apk
-          retention-days: 5
+        run: flutter build apk --debug

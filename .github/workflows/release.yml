@@ -16,7 +16,6 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #6.0.2
         with:
           show-progress: false
-          fetch-depth: 75 # For sentry releases
 
       # TODO: remove when https://go-review.googlesource.com/c/go/+/692935 lands in mainline go
       - name: Patch Go
@@ -35,10 +34,6 @@ jobs:
         with:
           flutter-version: '3.41.4'
           cache: true
-
-      - name: Setup bundletool for APK generation
-        run: |
-          curl -Lo bundletool.jar https://github.com/google/bundletool/releases/download/1.18.1/bundletool-all-1.18.1.jar
 
       - name: Get build name and number, install dependencies
         run: |

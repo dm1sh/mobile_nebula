@@ -73,12 +73,6 @@ class AboutScreenState extends State<AboutScreen> {
           ),
           ConfigSection(
             children: <Widget>[
-              //TODO: wire up these other pages
-              //          ConfigPageItem(label: Text('Changelog'), labelWidth: 300, onPressed: () => Utils.launchUrl('https://defined.net/mobile/changelog', context)),
-              ConfigPageItem(
-                label: Text('Privacy policy'),
-                onPressed: () => Utils.launchUrl('https://www.defined.net/privacy/'),
-              ),
               ConfigPageItem(
                 label: Text('Licenses'),
                 onPressed: () => Utils.openPage(context, (context) {
@@ -89,7 +83,7 @@ class AboutScreenState extends State<AboutScreen> {
           ),
           Padding(
             padding: EdgeInsets.only(top: 20),
-            child: Text('Copyright © 2026 Defined Networking, Inc', textAlign: TextAlign.center),
+            child: Text('Nebula - Open Source Mesh VPN', textAlign: TextAlign.center),
           ),
         ],
       ),

@@ -2,17 +2,14 @@ import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:flutter/cupertino.dart' show DefaultCupertinoLocalizations;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:logging_appenders/logging_appenders.dart';
-import 'package:mobile_nebula/screens/enrollment_screen.dart';
 import 'package:mobile_nebula/screens/main_screen.dart';
 import 'package:mobile_nebula/services/settings.dart';
 import 'package:mobile_nebula/services/theme.dart';
 import 'package:mobile_nebula/services/utils.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -20,18 +17,7 @@ Future<void> main() async {
   PrintAppender.setupLogging();
 
   usePathUrlStrategy();
-  var settings = Settings();
-  if (settings.trackErrors && !kDebugMode) {
-    await SentryFlutter.init((options) {
-      options.dsn = 'https://96106df405ade3f013187dfc8e4200e7@o920269.ingest.us.sentry.io/4508132321001472';
-      // Capture all traces.  May need to adjust if overwhelming
-      options.tracesSampleRate = 1.0;
-      // For each trace, capture all profiles
-      options.profilesSampleRate = 1.0;
-    }, appRunner: () => runApp(Main()));
-  } else {
-    runApp(Main());
-  }
+  runApp(Main());
 }
 
 //TODO: EventChannel might be better than the stream controller we are using now
@@ -115,15 +101,6 @@ class AppState extends State<App> {
       onGenerateRoute: (settings) {
         if (settings.name == '/') {
           return MaterialPageRoute(builder: (context) => MainScreen(dnEnrolled));
-        }
-
-        final uri = Uri.parse(settings.name!);
-        if (uri.path == EnrollmentScreen.routeName) {
-          // TODO: maybe implement this as a dialog instead of a page, you can stack multiple enrollment screens which is annoying in dev
-          return MaterialPageRoute(
-            builder: (context) =>
-                EnrollmentScreen(code: EnrollmentScreen.parseCode(settings.name!), stream: dnEnrolled),
-          );
         }
 
         return null;

@@ -4,10 +4,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:mobile_nebula/services/storage.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 
 bool defaultLogWrap = false;
-bool defaultTrackErrors = true;
 
 class Settings {
   final _storage = Storage();
@@ -40,19 +38,6 @@ class Settings {
 
   set logWrap(bool enabled) {
     _set('logWrap', enabled);
-  }
-
-  bool get trackErrors {
-    return _getBool('trackErrors', defaultTrackErrors);
-  }
-
-  set trackErrors(bool enabled) {
-    _set('trackErrors', enabled);
-
-    // Side-effect: Disable Sentry immediately
-    if (!enabled) {
-      Sentry.close();
-    }
   }
 
   bool _getBool(String key, bool defaultValue) {

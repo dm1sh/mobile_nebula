@@ -18,7 +18,6 @@ import 'package:uuid/uuid.dart';
 import 'package:yaml/yaml.dart';
 
 import '../models/certificate.dart';
-import 'enrollment_screen.dart';
 
 final _log = Logger('main_screen');
 
@@ -294,16 +293,6 @@ class MainScreenState extends State<MainScreen> {
           } catch (err) {
             return Utils.popError('Load YAML config', err.toString());
           }
-        },
-      ),
-      ListTile(
-        title: Text('Enroll with defined.net'),
-        subtitle: Text('Join your organizations network'),
-        trailing: arrowIcon,
-        onTap: () {
-          // Remove the modal
-          Navigator.pop(context);
-          Utils.openPage(context, (context) => EnrollmentScreen(stream: widget.dnEnrollStream, allowCodeEntry: true));
         },
       ),
     ];

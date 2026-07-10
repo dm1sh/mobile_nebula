@@ -94,29 +94,6 @@ class SettingsScreenState extends State<SettingsScreen> {
     items.add(
       ConfigSection(
         children: [
-          ConfigItem(
-            label: Text('Report errors automatically'),
-            labelWidth: 250,
-            content: Align(
-              alignment: Alignment.centerRight,
-              child: Switch.adaptive(
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                value: settings.trackErrors,
-                onChanged: (value) {
-                  setState(() {
-                    settings.trackErrors = value;
-                  });
-                },
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    items.add(
-      ConfigSection(
-        children: [
           ConfigPageItem(label: Text('About'), onPressed: () => Utils.openPage(context, (context) => AboutScreen())),
         ],
       ),

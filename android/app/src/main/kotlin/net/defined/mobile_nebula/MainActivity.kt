@@ -13,7 +13,6 @@ import android.provider.Settings
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.work.*
 import com.google.gson.Gson
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -23,12 +22,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.util.concurrent.TimeUnit
 
 const val TAG = "nebula"
 const val VPN_START_CODE = 0x10
 const val CHANNEL = "net.defined.mobileNebula/NebulaVpnService"
-const val UPDATE_WORKER = "dnUpdater"
 
 class MainActivity: FlutterActivity() {
     private var ui: MethodChannel? = null
@@ -36,7 +33,6 @@ class MainActivity: FlutterActivity() {
     private var inMessenger: Messenger? = Messenger(IncomingHandler())
     private var outMessenger: Messenger? = null
 
-    private var apiClient: APIClient? = null
     private var sites: Sites? = null
 
     // Don't attempt to unbind from the service unless the client has received some
@@ -51,7 +47,6 @@ class MainActivity: FlutterActivity() {
     private var activeSiteId: String? = null
     private var onStopCallback: (() -> Unit)? = null
 
-    private lateinit var workManager: WorkManager
     private val refreshReceiver: BroadcastReceiver = RefreshReceiver()
 
     companion object {
@@ -82,8 +77,6 @@ class MainActivity: FlutterActivity() {
                 "nebula.renderConfig" -> nebulaRenderConfig(call, result)
                 "nebula.verifyCertAndKey" -> nebulaVerifyCertAndKey(call, result)
 
-                "dn.enroll" -> dnEnroll(call, result)
-
                 "listSites" -> listSites(result)
                 "deleteSite" -> deleteSite(call, result)
                 "saveSite" -> saveSite(call, result)
@@ -109,26 +102,13 @@ class MainActivity: FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        workManager = WorkManager.getInstance(application) //TODO: this got moved probably because our AndroidManifest isn't good enough anymore to initialize it for us. Fix initializing
-        apiClient = APIClient(context)
-
         ContextCompat.registerReceiver(context, refreshReceiver, IntentFilter(ACTION_REFRESH_SITES), ContextCompat.RECEIVER_NOT_EXPORTED)
-
-        enqueueDNUpdater()
     }
 
     override fun onDestroy() {
         super.onDestroy()
 
         unregisterReceiver(refreshReceiver)
-    }
-
-    private fun enqueueDNUpdater() {
-        val workRequest = PeriodicWorkRequestBuilder<DNUpdateWorker>(15, TimeUnit.MINUTES).build()
-        workManager.enqueueUniquePeriodicWork(
-                UPDATE_WORKER,
-                ExistingPeriodicWorkPolicy.KEEP,
-                workRequest)
     }
 
     // This is called by the UI _after_ it has finished rendering the site list to avoid a race condition with detecting
@@ -148,7 +128,7 @@ class MainActivity: FlutterActivity() {
         val intent = Intent(Settings.ACTION_VPN_SETTINGS)
         startActivity(intent)
         result.success(null)
-	}
+    }
 
     private fun getAlwaysExcludedApps(result: MethodChannel.Result) {
         result.success(Gson().toJson(NebulaVpnService.ALWAYS_EXCLUDED_APPS))
@@ -266,27 +246,6 @@ class MainActivity: FlutterActivity() {
         }
     }
 
-    private fun dnEnroll(call: MethodCall, result: MethodChannel.Result) {
-        val code = call.arguments as String
-        if (code == "") {
-            return result.error("required_argument", "code is a required argument", null)
-        }
-
-        val siteDir: File
-        try {
-            val json = apiClient!!.enroll(code)
-            siteDir = saveSite(context, json)
-        } catch (err: Exception) {
-            return result.error("unhandled_error", err.message, null)
-        }
-
-        if (!validateOrDeleteSite(siteDir)) {
-            return result.error("failure", "Enrollment failed due to invalid config", null)
-        }
-
-        result.success(null)
-    }
-
     private fun listSites(result: MethodChannel.Result) {
         sites!!.refreshSites(activeSiteId)
         val sites = sites!!.getSites()
@@ -333,7 +292,6 @@ class MainActivity: FlutterActivity() {
         }
 
         sites?.refreshSites(activeSiteId)
-        sites?.updateAll()
 
         result.success(null)
     }

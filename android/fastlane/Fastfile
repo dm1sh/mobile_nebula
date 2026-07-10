@@ -17,35 +17,10 @@ opt_out_usage
 default_platform(:android)
 
 platform :android do
-  lane :release_build_number do
-    nextCode = sprintf("%s", latest_googleplay_version_code + 1)
-    File.write("../../release_build_number", nextCode)
-  end
-
-  desc "Deploy a new version to the Google Play"
-  lane :release do
-    upload_to_play_store(
-      track: 'internal',
-      aab: '../build/app/outputs/bundle/release/app-release.aab'
+  desc "Build a release APK/AAB"
+  lane :build do
+    gradle(
+      task: 'clean bundleRelease',
     )
   end
-end
-
-def latest_googleplay_version_code
-  productionVersionCodes = google_play_track_version_codes(track: 'production')
-  #NOTE: we do not have a beta track right now
-  #betaVersionCodes = google_play_track_version_codes(track: 'beta')
-  alphaVersionCodes = google_play_track_version_codes(track: 'alpha')
-  internalVersionCodes = google_play_track_version_codes(track: 'internal')
-
-  # puts version codes from all tracks into the same array
-  versionCodes = [
-    productionVersionCodes,
-    #betaVersionCodes,
-    alphaVersionCodes,
-    internalVersionCodes
-  ].reduce([], :concat)
-
-  # returns the highest version code from array
-  return versionCodes.max
 end

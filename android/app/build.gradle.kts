@@ -33,10 +33,10 @@ android {
 
     signingConfigs {
         create("release") {
-            keyAlias = "key"
-            storeFile = if(System.getenv("GOOGLE_PLAY_KEYSTORE_PATH").isNullOrEmpty()) null else file(System.getenv("GOOGLE_PLAY_KEYSTORE_PATH"))
-            keyPassword = System.getenv("GOOGLE_PLAY_KEYSTORE_PASSWORD")
-            storePassword = System.getenv("GOOGLE_PLAY_KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("RELEASE_KEY_ALIAS") ?: "key"
+            storeFile = if(System.getenv("RELEASE_KEYSTORE_PATH").isNullOrEmpty()) null else file(System.getenv("RELEASE_KEYSTORE_PATH"))
+            keyPassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
+            storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
         }
     }
 
