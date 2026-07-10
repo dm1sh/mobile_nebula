@@ -34,9 +34,9 @@ android {
     signingConfigs {
         create("release") {
             keyAlias = System.getenv("RELEASE_KEY_ALIAS") ?: "key"
-            storeFile = if(System.getenv("RELEASE_KEYSTORE_PATH").isNullOrEmpty()) null else file(System.getenv("RELEASE_KEYSTORE_PATH"))
-            keyPassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
+            storeFile = System.getenv("RELEASE_KEYSTORE_PATH")?.let { file(it) }
             storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
+            keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
         }
     }
 
@@ -44,7 +44,11 @@ android {
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = if (signingConfigs.getByName("release").storeFile != null) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             resValue("string", "app_name", "\"Nebula\"")
         }
