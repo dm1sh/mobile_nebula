@@ -218,6 +218,15 @@ data class UnsafeRouteGateway(
     val weight: Int
 )
 
+data class Socks5Proxy(
+    val host: String,
+    val port: Int,
+) {
+    fun isValid(): Boolean {
+        return host.isNotBlank() && port in 1..65535
+    }
+}
+
 /**
  * Saves a site JSON string to disk. Extracts key and dnCredentials into
  * encrypted storage, handles the always-on file, and writes the remaining
@@ -277,6 +286,9 @@ fun saveSite(context: Context, jsonString: String, existingSite: Site? = null): 
         if (!map.containsKey("excludedApps")) {
             map["excludedApps"] = existingSite.excludedApps
         }
+        if (!map.containsKey("socks5Proxy")) {
+            map["socks5Proxy"] = existingSite.socks5Proxy
+        }
     }
 
     // Stamp the current config version
@@ -306,6 +318,7 @@ class Site(context: Context, siteDir: File) {
     val logFile: String?
     var errors: ArrayList<String> = ArrayList()
     var excludedApps: List<String> = ArrayList()
+    val socks5Proxy: Socks5Proxy?
     val alwaysOn: Boolean
 
     // Fields parsed from rawConfig for VPN service use
@@ -343,6 +356,7 @@ class Site(context: Context, siteDir: File) {
         // Parse excludedApps from site config
         @Suppress("UNCHECKED_CAST")
         excludedApps = (siteMap["excludedApps"] as? List<String>) ?: emptyList()
+        socks5Proxy = parseSocks5Proxy(siteMap["socks5Proxy"])
 
         connected = false
         status = "Disconnected"
@@ -487,6 +501,18 @@ class Site(context: Context, siteDir: File) {
             }
             val value = (current as? Map<*, *>)?.get(path.last())
             return (value as? Number)?.toInt()
+        }
+
+        fun parseSocks5Proxy(raw: Any?): Socks5Proxy? {
+            val proxyMap = raw as? Map<*, *> ?: return null
+            val host = (proxyMap["host"] ?: proxyMap["ip"])?.toString()?.trim() ?: return null
+            val port = when (val rawPort = proxyMap["port"]) {
+                is Number -> rawPort.toInt()
+                is String -> rawPort.toIntOrNull()
+                else -> null
+            } ?: return null
+            val proxy = Socks5Proxy(host, port)
+            return if (proxy.isValid()) proxy else null
         }
     }
 }

@@ -8,6 +8,7 @@ import 'package:mobile_nebula/components/config/config_item.dart';
 import 'package:mobile_nebula/components/config/config_page_item.dart';
 import 'package:mobile_nebula/components/config/config_section.dart';
 import 'package:mobile_nebula/components/form_page.dart';
+import 'package:mobile_nebula/models/ip_and_port.dart';
 import 'package:mobile_nebula/models/site.dart';
 import 'package:mobile_nebula/models/unsafe_route.dart';
 import 'package:mobile_nebula/screens/siteConfig/cipher_screen.dart';
@@ -17,6 +18,7 @@ import 'package:mobile_nebula/screens/siteConfig/excluded_apps_screen.dart';
 import 'package:mobile_nebula/screens/siteConfig/log_verbosity_screen.dart';
 import 'package:mobile_nebula/screens/siteConfig/rendered_config_screen.dart';
 import 'package:mobile_nebula/services/utils.dart';
+import 'package:mobile_nebula/validators/ip_validator.dart';
 
 import 'unsafe_routes_screen.dart';
 
@@ -35,6 +37,7 @@ class Advanced {
   List<String> dnsResolvers;
   List<String> matchDomains;
   List<String> excludedApps;
+  IPAndPort? socks5Proxy;
   String staticMapNetwork;
 
   Advanced({
@@ -47,6 +50,7 @@ class Advanced {
     required this.dnsResolvers,
     required this.matchDomains,
     required this.excludedApps,
+    required this.socks5Proxy,
     required this.staticMapNetwork,
   });
 }
@@ -63,6 +67,8 @@ class AdvancedScreen extends StatefulWidget {
 
 class AdvancedScreenState extends State<AdvancedScreen> {
   late Advanced settings;
+  late TextEditingController proxyHostController;
+  late TextEditingController proxyPortController;
   var changed = false;
 
   @override
@@ -77,9 +83,66 @@ class AdvancedScreenState extends State<AdvancedScreen> {
       dnsResolvers: widget.site.dnsResolvers,
       matchDomains: widget.site.matchDomains,
       excludedApps: widget.site.excludedApps,
+      socks5Proxy: widget.site.socks5Proxy,
       staticMapNetwork: widget.site.staticMapNetwork,
     );
+    proxyHostController = TextEditingController(text: settings.socks5Proxy?.ip ?? '');
+    proxyPortController = TextEditingController(text: settings.socks5Proxy?.port?.toString() ?? '');
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    proxyHostController.dispose();
+    proxyPortController.dispose();
+    super.dispose();
+  }
+
+  String? _validateProxyHost(String? value) {
+    final host = (value ?? '').trim();
+    final port = proxyPortController.text.trim();
+    if (host.isEmpty && port.isEmpty) {
+      return null;
+    }
+    if (host.isEmpty) {
+      return 'Required when a proxy port is set';
+    }
+
+    final (valid, _) = ipValidator(host);
+    if (!valid) {
+      return 'Please enter a valid proxy IP address';
+    }
+
+    return null;
+  }
+
+  String? _validateProxyPort(String? value) {
+    final host = proxyHostController.text.trim();
+    final port = (value ?? '').trim();
+    if (host.isEmpty && port.isEmpty) {
+      return null;
+    }
+    if (port.isEmpty) {
+      return 'Required when a proxy IP is set';
+    }
+
+    final parsed = int.tryParse(port);
+    if (parsed == null || parsed < 1 || parsed > 65535) {
+      return 'Please enter a valid port';
+    }
+
+    return null;
+  }
+
+  void _saveProxySettings() {
+    final host = proxyHostController.text.trim();
+    final port = int.tryParse(proxyPortController.text.trim());
+    if (host.isEmpty && port == null) {
+      settings.socks5Proxy = null;
+      return;
+    }
+
+    settings.socks5Proxy = IPAndPort(host, port);
   }
 
   @override
@@ -88,6 +151,7 @@ class AdvancedScreenState extends State<AdvancedScreen> {
       title: 'Advanced Settings',
       changed: changed,
       onSave: () {
+        _saveProxySettings();
         Navigator.pop(context);
         widget.onSave(settings);
       },
@@ -244,6 +308,37 @@ class AdvancedScreenState extends State<AdvancedScreen> {
                     );
                   });
                 },
+              ),
+              ConfigItem(
+                label: Text('SOCKS5 proxy'),
+                labelWidth: 150,
+                content: Row(
+                  children: [
+                    Expanded(
+                      child: AppTextFormField(
+                        controller: proxyHostController,
+                        placeholder: 'Optional IP',
+                        textAlign: TextAlign.right,
+                        maxLength: 45,
+                        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d\.:a-fA-F]+'))],
+                        validator: _validateProxyHost,
+                      ),
+                    ),
+                    Padding(padding: EdgeInsets.symmetric(horizontal: 4), child: Text(':')),
+                    SizedBox(
+                      width: 70,
+                      child: AppTextFormField(
+                        controller: proxyPortController,
+                        placeholder: 'port',
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.right,
+                        maxLength: 5,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        validator: _validateProxyPort,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               ConfigPageItem(
                 disabled: widget.site.managed,

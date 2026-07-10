@@ -168,6 +168,19 @@ class UnsafeRoute: Codable {
   }
 }
 
+struct Socks5Proxy: Codable {
+  var host: String
+  var port: Int
+
+  var isValid: Bool {
+    return !host.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && port > 0 && port <= 65535
+  }
+
+  func toDictionary() -> [String: Any] {
+    return ["host": host, "port": port]
+  }
+}
+
 /// Saves a site JSON string to disk. Extracts key and dnCredentials into
 /// encrypted storage and writes the remaining config to config.json.
 /// If existingSite is provided, client-only fields (sortKey) will be preserved from it.
@@ -211,6 +224,9 @@ func saveSiteToDisk(jsonString: String, existingSite: Site? = nil) throws {
   if let existingSite = existingSite {
     if map["sortKey"] == nil {
       map["sortKey"] = existingSite.sortKey
+    }
+    if map["socks5Proxy"] == nil, let socks5Proxy = existingSite.socks5Proxy {
+      map["socks5Proxy"] = socks5Proxy.toDictionary()
     }
   }
 
@@ -338,6 +354,7 @@ class Site: Encodable {
   var status: String?
   var logFile: String?
   var alwaysOn: Bool
+  var socks5Proxy: Socks5Proxy?
   var errors: [String]
 
   // Fields parsed from rawConfig for VPN service use (not encoded to Flutter)
@@ -425,6 +442,7 @@ class Site: Encodable {
     rawConfig = configMap["rawConfig"] as? String ?? "{}"
     configVersion = (configMap["configVersion"] as? NSNumber)?.intValue ?? 1
     alwaysOn = false  // Overridden by init(manager:) if applicable
+    socks5Proxy = Site.parseSocks5Proxy(configMap["socks5Proxy"])
 
     // Default these to disconnected for the UI
     status = statusString[.disconnected]
@@ -577,6 +595,28 @@ class Site: Encodable {
     }
   }
 
+  private static func parseSocks5Proxy(_ raw: Any?) -> Socks5Proxy? {
+    guard let proxyMap = raw as? [String: Any] else {
+      return nil
+    }
+
+    let host = (proxyMap["host"] as? String ?? proxyMap["ip"] as? String ?? "")
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+    let port: Int
+    if let number = proxyMap["port"] as? NSNumber {
+      port = number.intValue
+    } else if let intPort = proxyMap["port"] as? Int {
+      port = intPort
+    } else if let stringPort = proxyMap["port"] as? String, let parsedPort = Int(stringPort) {
+      port = parsedPort
+    } else {
+      return nil
+    }
+
+    let proxy = Socks5Proxy(host: host, port: port)
+    return proxy.isValid ? proxy : nil
+  }
+
   // Gets the private key from the keystore, we don't always need it in memory
   func getKey() throws -> String {
     guard let keyData = KeyChain.load(key: "\(id).key") else {
@@ -638,6 +678,7 @@ class Site: Encodable {
     case status
     case logFile
     case alwaysOn
+    case socks5Proxy
     case errors
   }
 }

@@ -10,6 +10,7 @@ import 'package:uuid/uuid.dart';
 import 'package:yaml/yaml.dart';
 
 import 'certificate.dart';
+import 'ip_and_port.dart';
 import 'static_hosts.dart';
 
 // Re-export HostInfo for use by callers that used to import it transitively
@@ -46,6 +47,7 @@ class Site {
   late String logFile;
   late bool alwaysOn;
   late List<String> excludedApps;
+  IPAndPort? socks5Proxy;
 
   // DN management
   late bool managed;
@@ -70,6 +72,7 @@ class Site {
     this.lastManagedUpdate,
     this.alwaysOn = false,
     List<String>? excludedApps,
+    this.socks5Proxy,
   }) {
     this.id = id ?? uuid.v4();
     this.rawConfig = rawConfig ?? {};
@@ -119,6 +122,7 @@ class Site {
       lastManagedUpdate: decoded['lastManagedUpdate'],
       alwaysOn: decoded['alwaysOn'],
       excludedApps: decoded['excludedApps'],
+      socks5Proxy: decoded['socks5Proxy'],
     );
   }
 
@@ -206,6 +210,7 @@ class Site {
     lastManagedUpdate = decoded['lastManagedUpdate'];
     alwaysOn = decoded['alwaysOn'];
     excludedApps = decoded['excludedApps'];
+    socks5Proxy = decoded['socks5Proxy'];
   }
 
   static Map<String, dynamic> _fromJson(Map<String, dynamic> json) {
@@ -224,6 +229,24 @@ class Site {
     List<String> excludedApps = [];
     for (var val in rawExcludedApps) {
       excludedApps.add(val.toString());
+    }
+
+    IPAndPort? socks5Proxy;
+    final rawSocks5Proxy = json['socks5Proxy'];
+    if (rawSocks5Proxy is Map) {
+      final host = rawSocks5Proxy['host']?.toString() ?? rawSocks5Proxy['ip']?.toString();
+      final rawPort = rawSocks5Proxy['port'];
+      final port = rawPort is int ? rawPort : int.tryParse(rawPort?.toString() ?? '');
+      if (host != null && host.isNotEmpty && port != null) {
+        socks5Proxy = IPAndPort(host, port);
+      }
+    } else if (rawSocks5Proxy is String && rawSocks5Proxy.isNotEmpty) {
+      try {
+        socks5Proxy = IPAndPort.fromString(rawSocks5Proxy);
+      } catch (_) {
+        // Ignore malformed legacy/string values from disk; the native layer also treats
+        // invalid proxy settings as disabled so the VPN can still start.
+      }
     }
 
     List<dynamic> rawCA = json['ca'] ?? [];
@@ -259,6 +282,7 @@ class Site {
       "lastManagedUpdate": json["lastManagedUpdate"] == null ? null : DateTime.parse(json["lastManagedUpdate"]),
       "alwaysOn": json['alwaysOn'] ?? false,
       "excludedApps": excludedApps,
+      "socks5Proxy": socks5Proxy,
     };
   }
 
@@ -277,6 +301,12 @@ class Site {
       'key': key,
       'alwaysOn': alwaysOn,
       'excludedApps': excludedApps,
+      'socks5Proxy': socks5Proxy == null
+          ? null
+          : {
+              'host': socks5Proxy!.ip,
+              'port': socks5Proxy!.port,
+            },
     };
   }
 

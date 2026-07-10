@@ -414,6 +414,7 @@ class SiteConfigScreenState extends State<SiteConfigScreen> {
                     site.matchDomains = settings.matchDomains;
                     site.mtu = settings.mtu;
                     site.excludedApps = settings.excludedApps;
+                    site.socks5Proxy = settings.socks5Proxy;
                     site.staticMapNetwork = settings.staticMapNetwork;
                   });
                 },

@@ -151,11 +151,25 @@ class NebulaVpnService : VpnService() {
                 .allowFamily(OsConstants.AF_INET)
                 .allowFamily(OsConstants.AF_INET6)
 
+        val addedRoutes = mutableSetOf<Pair<String, Int>>()
+        fun addRouteOnce(address: String, prefixLength: Int) {
+            if (addedRoutes.add(Pair(address, prefixLength))) {
+                builder.addRoute(address, prefixLength)
+            }
+        }
+
+        var hasIPv4Address = false
+        var hasIPv6Address = false
         try {
             site!!.cert!!.cert.networks.forEach { network ->
                 val cidr = mobileNebula.MobileNebula.parseCIDR(network)
                 builder.addAddress(cidr.address, cidr.prefixLength.toInt())
-                builder.addRoute(cidr.maskedAddress, cidr.prefixLength.toInt())
+                addRouteOnce(cidr.maskedAddress, cidr.prefixLength.toInt())
+                if (cidr.ipLen.toInt() == 4) {
+                    hasIPv4Address = true
+                } else if (cidr.ipLen.toInt() == 16) {
+                    hasIPv6Address = true
+                }
             }
         } catch (err: Exception) {
             Log.e(TAG, "Got an error setting up vpn networks $err")
@@ -167,12 +181,26 @@ class NebulaVpnService : VpnService() {
         try {
             site!!.unsafeRoutes.forEach { unsafeRoute ->
                 val unsafeCidr = mobileNebula.MobileNebula.parseCIDR(unsafeRoute.route)
-                builder.addRoute(unsafeCidr.maskedAddress, unsafeCidr.prefixLength.toInt())
+                addRouteOnce(unsafeCidr.maskedAddress, unsafeCidr.prefixLength.toInt())
             }
         } catch (err: Exception) {
             Log.e(TAG, "Got an error setting up unsafe routes $err")
             announceExit(site!!.id, err.message)
             return stopSelf()
+        }
+
+        if (site!!.socks5Proxy != null) {
+            try {
+                if (hasIPv4Address) {
+                    addRouteOnce("0.0.0.0", 0)
+                }
+                if (hasIPv6Address) {
+                    addRouteOnce("::", 0)
+                }
+                Log.i(TAG, "SOCKS5 proxy enabled for non-Nebula TCP traffic: ${site!!.socks5Proxy!!.host}:${site!!.socks5Proxy!!.port}")
+            } catch (err: Exception) {
+                Log.w(TAG, "Unable to add default proxy routes; continuing without proxy capture", err)
+            }
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
