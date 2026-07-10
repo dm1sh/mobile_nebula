@@ -415,6 +415,8 @@ class SiteConfigScreenState extends State<SiteConfigScreen> {
                     site.mtu = settings.mtu;
                     site.excludedApps = settings.excludedApps;
                     site.staticMapNetwork = settings.staticMapNetwork;
+                    site.proxyIp = settings.proxyIp;
+                    site.proxyPort = settings.proxyPort;
                   });
                 },
               );

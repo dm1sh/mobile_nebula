@@ -36,6 +36,8 @@ class Advanced {
   List<String> matchDomains;
   List<String> excludedApps;
   String staticMapNetwork;
+  String proxyIp;
+  int proxyPort;
 
   Advanced({
     required this.lhDuration,
@@ -48,6 +50,8 @@ class Advanced {
     required this.matchDomains,
     required this.excludedApps,
     required this.staticMapNetwork,
+    required this.proxyIp,
+    required this.proxyPort,
   });
 }
 
@@ -78,6 +82,8 @@ class AdvancedScreenState extends State<AdvancedScreen> {
       matchDomains: widget.site.matchDomains,
       excludedApps: widget.site.excludedApps,
       staticMapNetwork: widget.site.staticMapNetwork,
+      proxyIp: widget.site.proxyIp,
+      proxyPort: widget.site.proxyPort,
     );
     super.initState();
   }
@@ -195,6 +201,45 @@ class AdvancedScreenState extends State<AdvancedScreen> {
                     );
                   });
                 },
+              ),
+              ConfigItem(
+                label: Text("Proxy IP"),
+                labelWidth: 150,
+                content: widget.site.managed
+                    ? Text(settings.proxyIp, textAlign: TextAlign.right)
+                    : AppTextFormField(
+                        initialValue: settings.proxyIp,
+                        textAlign: TextAlign.right,
+                        onSaved: (val) {
+                          setState(() {
+                            if (val != null) {
+                              settings.proxyIp = val;
+                              changed = true;
+                            }
+                          });
+                        },
+                      ),
+              ),
+              ConfigItem(
+                label: Text("Proxy Port"),
+                labelWidth: 150,
+                content: widget.site.managed
+                    ? Text(settings.proxyPort.toString(), textAlign: TextAlign.right)
+                    : AppTextFormField(
+                        initialValue: settings.proxyPort.toString(),
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.right,
+                        maxLength: 5,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        onSaved: (val) {
+                          setState(() {
+                            if (val != null) {
+                              settings.proxyPort = int.parse(val);
+                              changed = true;
+                            }
+                          });
+                        },
+                      ),
               ),
               ConfigPageItem(
                 label: Text('Unsafe routes'),

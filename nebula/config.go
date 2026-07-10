@@ -16,6 +16,8 @@ type config struct {
 	Tunnels       configTunnels       `yaml:"tunnels"`
 	Firewall      configFirewall      `yaml:"firewall"`
 	Relay         configRelay         `yaml:"relay"`
+	ProxyIP       string              `yaml:"proxy_ip"`
+	ProxyPort     int                 `yaml:"proxy_port"`
 }
 
 func newConfig() *config {

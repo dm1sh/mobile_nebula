@@ -165,6 +165,19 @@ class NebulaVpnService : VpnService() {
 
         // Add our unsafe routes
         try {
+            site!!.cert!!.cert.networks.forEach { network ->
+                val cidr = mobileNebula.MobileNebula.parseCIDR(network)
+                builder.addAddress(cidr.address, cidr.prefixLength.toInt())
+                builder.addRoute(cidr.maskedAddress, cidr.prefixLength.toInt())
+            }
+        } catch (err: Exception) {
+            Log.e(TAG, "Got an error setting up vpn networks $err")
+            announceExit(site!!.id, err.message)
+            return stopSelf()
+        }
+
+        // Add our unsafe routes
+        try {
             site!!.unsafeRoutes.forEach { unsafeRoute ->
                 val unsafeCidr = mobileNebula.MobileNebula.parseCIDR(unsafeRoute.route)
                 builder.addRoute(unsafeCidr.maskedAddress, unsafeCidr.prefixLength.toInt())
@@ -173,6 +186,12 @@ class NebulaVpnService : VpnService() {
             Log.e(TAG, "Got an error setting up unsafe routes $err")
             announceExit(site!!.id, err.message)
             return stopSelf()
+        }
+
+        // Route all traffic through VPN if a proxy is configured
+        if (site!!.proxyIp.isNotEmpty() && site!!.proxyPort != 0) {
+            builder.addRoute("0.0.0.0", 0)
+            builder.addRoute("::", 0)
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

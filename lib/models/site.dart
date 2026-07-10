@@ -307,6 +307,9 @@ class Site {
   String get staticMapNetwork => _getConfigString(['static_map', 'network']) ?? 'ip4';
   int get lhDuration => _getConfigInt(['lighthouse', 'interval']) ?? 0;
 
+  String get proxyIp => _getConfigString(['mobile_nebula', 'proxy_ip']) ?? '';
+  int get proxyPort => _getConfigInt(['mobile_nebula', 'proxy_port']) ?? 0;
+
   List<UnsafeRoute> get unsafeRoutes {
     final routes = _getConfig<List<dynamic>>(['tun', 'unsafe_routes']);
     if (routes == null) return [];
@@ -350,6 +353,9 @@ class Site {
   set logVerbosity(String value) => _setConfig(['logging', 'level'], value);
   set staticMapNetwork(String value) => _setConfig(['static_map', 'network'], value);
   set lhDuration(int value) => _setConfig(['lighthouse', 'interval'], value);
+
+  set proxyIp(String value) => _setConfig(['mobile_nebula', 'proxy_ip'], value);
+  set proxyPort(int value) => _setConfig(['mobile_nebula', 'proxy_port'], value);
 
   set unsafeRoutes(List<UnsafeRoute> routes) {
     _setConfig(['tun', 'unsafe_routes'], routes.map((r) => r.toJson()).toList());
