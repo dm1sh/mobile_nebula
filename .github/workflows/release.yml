@@ -55,11 +55,18 @@ jobs:
           ./gen-artifacts.sh skip
           flutter test
 
-      - name: Decode release keystore
+      - name: Decode and verify release keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
         run: |
-          echo "$KEYSTORE_BASE64" | base64 --decode > /tmp/release.keystore
+          # Decode: strip any accidental whitespace/newlines from the secret first
+          echo "$KEYSTORE_BASE64" | tr -d '\n\r ' | base64 -d > /tmp/release.keystore
+          # Verify the keystore is readable and the key alias exists
+          keytool -list -keystore /tmp/release.keystore \
+            -storepass "$RELEASE_KEYSTORE_PASSWORD" \
+            -alias "$RELEASE_KEY_ALIAS"
           echo "RELEASE_KEYSTORE_PATH=/tmp/release.keystore" >> $GITHUB_ENV
 
       - name: Build Android

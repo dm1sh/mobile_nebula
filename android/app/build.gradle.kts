@@ -36,7 +36,8 @@ android {
             keyAlias = System.getenv("RELEASE_KEY_ALIAS") ?: "key"
             storeFile = System.getenv("RELEASE_KEYSTORE_PATH")?.let { file(it) }
             storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
-            keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+            // Fall back to storePassword if no separate key password is set
+            keyPassword = System.getenv("RELEASE_KEY_PASSWORD") ?: System.getenv("RELEASE_KEYSTORE_PASSWORD")
         }
     }
 
