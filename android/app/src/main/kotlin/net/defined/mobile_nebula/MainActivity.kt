@@ -47,6 +47,7 @@ class MainActivity: FlutterActivity() {
     private var activeSiteId: String? = null
     private var onStopCallback: (() -> Unit)? = null
 
+    private lateinit var workManager: WorkManager
     private val refreshReceiver: BroadcastReceiver = RefreshReceiver()
 
     companion object {
@@ -101,6 +102,8 @@ class MainActivity: FlutterActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        workManager = WorkManager.getInstance(application) //TODO: this got moved probably because our AndroidManifest isn't good enough anymore to initialize it for us. Fix initializing
 
         ContextCompat.registerReceiver(context, refreshReceiver, IntentFilter(ACTION_REFRESH_SITES), ContextCompat.RECEIVER_NOT_EXPORTED)
     }
@@ -292,6 +295,7 @@ class MainActivity: FlutterActivity() {
         }
 
         sites?.refreshSites(activeSiteId)
+        sites?.updateAll()
 
         result.success(null)
     }
