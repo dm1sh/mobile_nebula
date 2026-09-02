@@ -6,6 +6,10 @@ on:
       # Only builds for tags with a meaningless build number suffix: v1.0.0-1
       - "v[0-9]+.[0-9]+.[0-9]+-*"
 
+permissions:
+  # Creating the draft release
+  contents: write
+
 jobs:
   build:
     name: Build android package
@@ -17,11 +21,11 @@ jobs:
         with:
           show-progress: false
 
-      # TODO: remove when https://go-review.googlesource.com/c/go/+/692935 lands in mainline go
-      - name: Patch Go
-        uses: DefinedNet/patch-go@c8e4a17c75eb242d34c212419d7d3d25e8d58949
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 #6.5.0
         with:
-          patch-ref: '296be05a97eb526dc0e438b7387670d4cae4a935'
+          go-version-file: nebula/go.mod
+          cache: false
 
       - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 #v5.2.0
         with:
@@ -32,7 +36,7 @@ jobs:
       - name: Install flutter
         uses: subosito/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e #v2.21.0
         with:
-          flutter-version: '3.41.4'
+          flutter-version: '3.44.6'
           cache: true
 
       - name: Get build name and number, install dependencies
