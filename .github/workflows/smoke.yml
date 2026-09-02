@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - x86-32bit
   pull_request:
     types: [opened, synchronize, labeled, reopened]
 
