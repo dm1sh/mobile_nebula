@@ -25,7 +25,7 @@ android {
 
     defaultConfig {
         applicationId = "net.defined.mobile_nebula"
-        minSdk = 26
+        minSdk = 25
         targetSdk = flutter.targetSdkVersion //TODO: was hardcoded to 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
