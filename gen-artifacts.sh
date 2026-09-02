@@ -76,4 +76,4 @@ cd ..
 mv lib/.gen.versions.dart lib/gen.versions.dart
 
 # Generate licenses library
-dart run dart_pubspec_licenses:generate
+dart run tool/generate_oss_licenses.dart .

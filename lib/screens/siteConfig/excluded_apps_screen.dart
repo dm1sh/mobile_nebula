@@ -274,7 +274,7 @@ class ExcludedAppsScreenState extends State<ExcludedAppsScreen> {
           fit: BoxFit.cover,
           cacheWidth: 128,
           cacheHeight: 128,
-          errorBuilder: (_, _, _) => _defaultIcon(),
+          errorBuilder: (_, __, ___) => _defaultIcon(),
         ),
       );
     }

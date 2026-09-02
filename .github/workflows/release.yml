@@ -36,7 +36,7 @@ jobs:
       - name: Install flutter
         uses: subosito/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e #v2.21.0
         with:
-          flutter-version: '3.44.6'
+          flutter-version: '3.27.4'
           cache: true
 
       - name: Get build name and number, install dependencies
@@ -79,7 +79,7 @@ jobs:
           RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: |
-          flutter build apk --release --build-number="$BUILD_NUMBER" --build-name="$BUILD_NAME"
+          flutter build apk --release --build-number="$BUILD_NUMBER" --build-name="$BUILD_NAME" --target-platform=android-arm,android-arm64,android-x86
 
       - name: Collect Android artifacts
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #6.0.0

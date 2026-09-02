@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:share_plus/share_plus.dart' as sp;
 
 class Share {
   /// Transforms a string of text into a file and shares that file
@@ -56,13 +56,11 @@ class Share {
     //NOTE: the filename used to specify the name of the file in gmail/slack/etc but no longer works that way
     // If we want to support that again we will need to save the file to a temporary directory, share that,
     // and then delete it
-    final result = await SharePlus.instance.share(
-      ShareParams(
-        subject: title,
-        sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
-        files: [XFile(filePath, name: filename)],
-      ),
+    final result = await sp.Share.shareXFiles(
+      [sp.XFile(filePath, name: filename)],
+      subject: title,
+      sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
     );
-    return result.status == ShareResultStatus.success;
+    return result.status == sp.ShareResultStatus.success;
   }
 }

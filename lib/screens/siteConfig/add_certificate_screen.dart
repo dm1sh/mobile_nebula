@@ -9,7 +9,6 @@ import 'package:mobile_nebula/components/config/config_text_item.dart';
 import 'package:mobile_nebula/components/pill_segmented_button.dart';
 import 'package:mobile_nebula/components/simple_page.dart';
 import 'package:mobile_nebula/models/certificate.dart';
-import 'package:mobile_nebula/screens/siteConfig/scan_qr_screen.dart';
 import 'package:mobile_nebula/services/share.dart';
 import 'package:mobile_nebula/services/utils.dart';
 
@@ -118,7 +117,6 @@ class AddCertificateScreenState extends State<AddCertificateScreen> {
     final segments = <({String value, Widget label})>[
       (value: 'paste', label: Text('Copy/Paste')),
       (value: 'file', label: Text('File')),
-      if (widget.supportsQRScanning) (value: 'qr', label: Text('QR Code')),
     ];
 
     List<Widget> items = [
@@ -140,8 +138,6 @@ class AddCertificateScreenState extends State<AddCertificateScreen> {
       items.addAll(_addPaste());
     } else if (inputType == 'file') {
       items.addAll(_addFile());
-    } else if (inputType == 'qr') {
-      items.addAll(_addQr());
     }
 
     return items;
@@ -208,24 +204,6 @@ class AddCertificateScreenState extends State<AddCertificateScreen> {
                 _addCertEntry(content);
               } catch (err) {
                 return Utils.popError('Failed to load certificate file', err.toString());
-              }
-            },
-          ),
-        ],
-      ),
-    ];
-  }
-
-  List<Widget> _addQr() {
-    return [
-      ConfigSection(
-        children: [
-          ConfigButtonItem(
-            content: Text('Scan a QR code'),
-            onPressed: () async {
-              var result = await Navigator.push(context, MaterialPageRoute(builder: (context) => ScanQRScreen()));
-              if (result != null) {
-                _addCertEntry(result);
               }
             },
           ),

@@ -46,7 +46,7 @@ jobs:
       - name: Install flutter
         uses: subosito/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e #v2.21.0
         with:
-          flutter-version: '3.44.6'
+          flutter-version: '3.27.4'
           cache: true
 
       - name: install dependencies
@@ -62,7 +62,7 @@ jobs:
           flutter test
 
       - name: Build Android debug
-        run: flutter build apk --debug
+        run: flutter build apk --debug --target-platform=android-arm,android-arm64,android-x86
 
       - name: Collect debug apk
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #6.0.0

@@ -414,13 +414,12 @@ class MaterialTheme {
     scaffoldBackgroundColor: colorScheme.surface,
     canvasColor: colorScheme.surface,
     // iOS needs CupertinoPageTransitionsBuilder to support the swipe-right-to-go-back gesture.
-    // FadeForwardsPageTransitionsBuilder does not provide this gesture.
     pageTransitionsTheme: PageTransitionsTheme(
       builders: Map<TargetPlatform, PageTransitionsBuilder>.fromIterable(
         TargetPlatform.values,
         value: (platform) => platform == TargetPlatform.iOS
             ? const CupertinoPageTransitionsBuilder()
-            : const FadeForwardsPageTransitionsBuilder(),
+            : const ZoomPageTransitionsBuilder(),
       ),
     ),
     segmentedButtonTheme: SegmentedButtonThemeData(

@@ -73,15 +73,8 @@ class MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Determine whether the device supports QR scanning. For example, some
-    // Chromebooks do not have camera support.
-    if (Platform.isAndroid) {
-      platform
-          .invokeMethod("android.deviceHasCamera")
-          .then((hasCamera) => setState(() => supportsQRScanning = hasCamera));
-    } else {
-      supportsQRScanning = true;
-    }
+    // QR scanning is not supported on the 32-bit x86 build (mobile_scanner removed).
+    supportsQRScanning = false;
 
     return SimplePage(
       title: Text('Nebula'),
@@ -173,7 +166,10 @@ class MainScreenState extends State<MainScreen> {
       scrollController: scrollController,
       padding: EdgeInsets.symmetric(vertical: 5),
       children: items,
-      onReorderItem: (oldI, newI) async {
+      onReorder: (oldI, newI) {
+        if (oldI < newI) {
+          newI -= 1;
+        }
         setState(() {
           final Site moved = sites.removeAt(oldI);
           sites.insert(newI, moved);
@@ -186,7 +182,7 @@ class MainScreenState extends State<MainScreen> {
 
           sites[i].sortKey = i;
           try {
-            await sites[i].save();
+            sites[i].save();
           } catch (err, stackTrace) {
             //TODO: display error at the end
             _log.severe('error while saving site: ${sites[i].name} (${sites[i].id})', err, stackTrace);
@@ -306,14 +302,14 @@ class MainScreenState extends State<MainScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Padding(
-          padding: EdgeInsetsGeometry.all(32),
+          padding: EdgeInsets.all(32),
           child: Text('Add Site', style: Theme.of(context).listTileTheme.titleTextStyle!.copyWith(fontSize: 18)),
         ),
         Flexible(
           child: SafeArea(
             child: ListView(
               shrinkWrap: true,
-              padding: EdgeInsetsGeometry.fromLTRB(32, 0, 32, 32),
+              padding: EdgeInsets.fromLTRB(32, 0, 32, 32),
               children: List.generate(children.length, (index) {
                 final borderSide = BorderSide(color: borderColor);
                 if (index == 0) {
