@@ -73,7 +73,7 @@ jobs:
           flutter test
 
       - name: Build Android debug
-        run: flutter build apk --debug --target-platform=android-arm,android-arm64,android-x86
+        run: flutter build apk --debug --target-platform=android-x86
 
       - name: Collect debug apk
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #6.0.0

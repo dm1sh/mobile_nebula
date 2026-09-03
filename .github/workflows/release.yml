@@ -89,7 +89,7 @@ jobs:
           RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: |
-          flutter build apk --release --build-number="$BUILD_NUMBER" --build-name="$BUILD_NAME" --target-platform=android-arm,android-arm64,android-x86
+          flutter build apk --release --build-number="$BUILD_NUMBER" --build-name="$BUILD_NAME" --target-platform=android-x86
 
       - name: Collect Android artifacts
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #6.0.0
