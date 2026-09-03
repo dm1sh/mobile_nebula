@@ -58,6 +58,18 @@ android {
             resValue("string", "app_name", "\"Nebula-DEBUG\"")
             applicationIdSuffix = ".debug"
         }
+
+        // x86 has no AOT engine, so the distributable x86 APK is a JIT (profile) build.
+        // Sign it with the release keystore and use the plain package id/app name.
+        profile {
+            signingConfig = if (signingConfigs.getByName("release").storeFile != null) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
+            applicationIdSuffix = null
+            resValue("string", "app_name", "\"Nebula\"")
+        }
     }
 }
 
