@@ -219,6 +219,79 @@ logging:
       });
     });
 
+    group('relay', () {
+      test('defaults', () async {
+        final site = await Site.fromYaml(loadYaml('{}'));
+        expect(site.useRelays, true);
+        expect(site.amRelay, false);
+        expect(site.relays, isEmpty);
+        expect(site.errors, isEmpty);
+      });
+
+      test('parses relay settings', () async {
+        final site = await Site.fromYaml(
+          loadYaml('''
+relay:
+  am_relay: true
+  use_relays: false
+  relays:
+    - 10.1.1.1
+    - 10.1.1.2
+'''),
+        );
+        expect(site.useRelays, false);
+        expect(site.amRelay, true);
+        expect(site.relays, ['10.1.1.1', '10.1.1.2']);
+        expect(site.errors, isEmpty);
+      });
+
+      test('parses partial relay settings', () async {
+        final site = await Site.fromYaml(
+          loadYaml('''
+relay:
+  use_relays: false
+'''),
+        );
+        expect(site.useRelays, false);
+        expect(site.amRelay, false);
+        expect(site.relays, isEmpty);
+        expect(site.errors, isEmpty);
+      });
+
+      test('setters write into rawConfig', () async {
+        final site = await Site.fromYaml(loadYaml('{}'));
+        site.useRelays = false;
+        site.amRelay = true;
+        site.relays = ['10.1.1.1'];
+
+        expect(site.useRelays, false);
+        expect(site.amRelay, true);
+        expect(site.relays, ['10.1.1.1']);
+
+        final relay = site.rawConfig['relay'] as Map<String, dynamic>;
+        expect(relay['use_relays'], false);
+        expect(relay['am_relay'], true);
+        expect(relay['relays'], ['10.1.1.1']);
+      });
+
+      test('clearing relays removes the key', () async {
+        final site = await Site.fromYaml(
+          loadYaml('''
+relay:
+  relays:
+    - 10.1.1.1
+'''),
+        );
+        expect(site.relays, ['10.1.1.1']);
+
+        site.relays = [];
+        expect(site.relays, isEmpty);
+
+        final relay = site.rawConfig['relay'] as Map<String, dynamic>;
+        expect(relay.containsKey('relays'), false);
+      });
+    });
+
     test('full config parses all fields together', () async {
       final site = await Site.fromYaml(
         loadYaml('''

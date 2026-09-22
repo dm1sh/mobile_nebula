@@ -369,6 +369,30 @@ class Site {
     _setConfig(['mobile_nebula', 'match_domains'], domains);
   }
 
+  // Relay settings (nebula's relay config section)
+  bool get useRelays => _getConfigBool(['relay', 'use_relays']) ?? true;
+
+  set useRelays(bool value) => _setConfig(['relay', 'use_relays'], value);
+
+  bool get amRelay => _getConfigBool(['relay', 'am_relay']) ?? false;
+
+  set amRelay(bool value) => _setConfig(['relay', 'am_relay'], value);
+
+  List<String> get relays {
+    final rawRelays = _getConfig<List<dynamic>>(['relay', 'relays']);
+    if (rawRelays == null) return [];
+    return rawRelays.map((r) => r.toString()).toList();
+  }
+
+  set relays(List<String> value) {
+    if (value.isEmpty) {
+      _getConfig<Map<String, dynamic>>(['relay'])?.remove('relays');
+      return;
+    }
+
+    _setConfig(['relay', 'relays'], value);
+  }
+
   List<FirewallRule> get inboundFirewallRules {
     final rules = _getConfig<List<dynamic>>(['firewall', 'inbound']);
     if (rules == null) return [];
@@ -422,6 +446,13 @@ class Site {
     if (val is int) return val;
     if (val is double) return val.toInt();
     if (val is String) return int.tryParse(val);
+    return null;
+  }
+
+  bool? _getConfigBool(List<String> path) {
+    final val = _getConfig<dynamic>(path);
+    if (val is bool) return val;
+    if (val is String) return val.toLowerCase() == 'true';
     return null;
   }
 

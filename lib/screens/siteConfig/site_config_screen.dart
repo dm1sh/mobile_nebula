@@ -16,6 +16,7 @@ import 'package:mobile_nebula/screens/siteConfig/advanced_screen.dart';
 import 'package:mobile_nebula/screens/siteConfig/ca_list_screen.dart';
 import 'package:mobile_nebula/screens/siteConfig/certificate_details_screen.dart';
 import 'package:mobile_nebula/screens/siteConfig/firewall_rules_screen.dart';
+import 'package:mobile_nebula/screens/siteConfig/relay_screen.dart';
 import 'package:mobile_nebula/screens/siteConfig/static_hosts_screen.dart';
 import 'package:mobile_nebula/services/utils.dart';
 
@@ -103,6 +104,7 @@ class SiteConfigScreenState extends State<SiteConfigScreen> {
           _main(),
           _keys(),
           _hosts(),
+          _relays(),
           _firewall(),
           _advanced(),
           _managed(),
@@ -334,6 +336,47 @@ class SiteConfigScreenState extends State<SiteConfigScreen> {
         ),
       ],
     );
+  }
+
+  Widget _relays() {
+    return ConfigSection(
+      label: "RELAYS",
+      children: <Widget>[
+        ConfigPageItem(
+          label: Text('Relays'),
+          content: Wrap(
+            alignment: WrapAlignment.end,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: <Widget>[Text(_relaySummary())],
+          ),
+          onPressed: () {
+            Utils.openPage(context, (context) {
+              return RelayScreen(
+                settings: RelaySettings(useRelays: site.useRelays, amRelay: site.amRelay, relays: site.relays),
+                onSave: site.managed
+                    ? null
+                    : (settings) {
+                        setState(() {
+                          changed = true;
+                          site.useRelays = settings.useRelays;
+                          site.amRelay = settings.amRelay;
+                          site.relays = settings.relays;
+                        });
+                      },
+              );
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  String _relaySummary() {
+    if (site.amRelay) {
+      return 'Acts as relay';
+    }
+
+    return Utils.itemCountFormat(site.relays.length, singleSuffix: 'relay', multiSuffix: 'relays');
   }
 
   Widget _firewall() {

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added relay settings to the site configuration UI: use relays, act as relay, and a list of relay hosts.
+
 ## [0.0.41] - 2021-06-09
 
 ### Added
