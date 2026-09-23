@@ -25,7 +25,7 @@ void main() {
 
   group('RelayScreen', () {
     testWidgets('shows toggles and configured relays', (tester) async {
-      await pumpRelayScreen(tester, settings: _settings(relays: ['10.1.1.1']));
+      await pumpRelayScreen(tester, settings: _settings(relays: ['10.1.1.1']), onSave: (_) {});
 
       expect(find.text('Use relays'), findsOneWidget);
       expect(find.text('Act as relay'), findsOneWidget);
@@ -81,7 +81,7 @@ void main() {
     });
 
     testWidgets('add another appends a relay field', (tester) async {
-      await pumpRelayScreen(tester);
+      await pumpRelayScreen(tester, onSave: (_) {});
 
       expect(find.byType(IPFormField), findsNothing);
 
@@ -114,6 +114,9 @@ void main() {
     testWidgets('is read only when onSave is null', (tester) async {
       await pumpRelayScreen(tester, settings: _settings(relays: ['10.1.1.1']));
 
+      // addresses render as plain text and editing affordances are hidden
+      expect(find.text('10.1.1.1'), findsOneWidget);
+      expect(find.byType(IPFormField), findsNothing);
       expect(find.text('Add another'), findsNothing);
       expect(find.byIcon(Icons.remove_circle), findsNothing);
 
